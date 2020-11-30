@@ -1,5 +1,5 @@
 ```
-Smoke is a micro project manager of Haskell
+Smoke is a micro project manager for Haskell
 
 Usage:
     smoke [subcommand]
