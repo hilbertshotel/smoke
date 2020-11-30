@@ -1,5 +1,6 @@
 module Main where
 
+import Info
 import Error
 import Subcmd
 import System.Environment
@@ -10,7 +11,7 @@ main = do
     args <- getArgs
     
     case length args of
-        0 -> Subcmd.info
+        0 -> Info.text
 
         1 -> case head args of
             "run" -> Subcmd.run

@@ -5,19 +5,6 @@ import System.Directory
 import System.Process
 
 
--- SUBCOMMAND INFO
-info :: IO ()
-info = do
-    putStrLn "Delay is a micro project manager for Haskell\n\
-\\n\
-\Usage:\n\
-\    delay [subcommand]\n\
-\\n\
-\Subcommands:\n\
-\    new <name>      Create a new Haskell project\n\
-\    run             Compile and run binary\n"
-
-
 -- SUBCOMMAND RUN
 run :: IO ()
 run = do
@@ -29,17 +16,17 @@ run = do
         (False, _) -> Error.missing "`src/Main.hs`"
         (True, False) -> Error.missing "`bin` directory"
         otherwise -> do
-            
-            let name = extractName currentDir
-            let bin = "bin/" ++ name
-            let crun = "ghc -o " ++ bin ++ " -no-keep-hi-files -no-keep-o-files src/Main.hs; " ++ bin
+
+            let name = fromPathExtractName currentDir
+            let bin = "../bin/" ++ name
+            let crun = "cd src; ghc -o "++bin++" -no-keep-hi-files -no-keep-o-files Main.hs; cd ..; "++bin
          
             callCommand crun
             return ()
     
-
-extractName :: String -> String
-extractName currentDir = last $ words [if c == '/' then ' ' else c | c <- currentDir]
+fromPathExtractName :: String -> String
+fromPathExtractName currentDir = last path 
+    where path = words [if c == '/' then ' ' else c | c <- currentDir]
 
 
 -- SUBCOMMAND NEW
@@ -50,7 +37,6 @@ new name = do
         then Error.exists name
         else createNewProject name
         
-
 createNewProject :: String -> IO ()
 createNewProject name = do
     currentDir <- getCurrentDirectory
