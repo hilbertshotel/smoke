@@ -18,8 +18,8 @@ run = do
         otherwise -> do
 
             let name = fromPathExtractName currentDir
-            let bin = "../bin/" ++ name
-            let crun = "cd src; ghc -o "++bin++" -no-keep-hi-files -no-keep-o-files Main.hs; cd ..; "++bin
+            let bin = "bin/" ++ name
+            let crun = "ghc -o "++bin++" -no-keep-hi-files -no-keep-o-files -i:src Main; "++bin
          
             callCommand crun
             return ()
