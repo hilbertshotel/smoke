@@ -1,19 +1,13 @@
 module Error where
 
 unknown :: String -> IO ()
-unknown sub = do
-    let error = "error: unknown subcommand `" ++ sub ++ "`"
-    putStrLn error
+unknown sub = putStrLn ("error: unknown subcommand `" ++ sub ++ "`")
 
 many :: IO ()
 many = putStrLn "error: too many arguments"
 
 missing :: String -> IO ()
-missing path = do
-    let error = "error: could not find " ++ path
-    putStrLn error
+missing path = putStrLn ("error: could not find " ++ path)
 
 exists :: String -> IO ()
-exists name = do
-    let error = "error: `" ++ name ++ "` already exists"
-    putStrLn error
+exists name = putStrLn ("error: `" ++ name ++ "` already exists")

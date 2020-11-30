@@ -6,66 +6,36 @@ import System.Process
 
 
 -- SUBCOMMAND BUILD
-build :: String -> IO ()
-build name = do
-    currentDir <- getCurrentDirectory
-    fileExists <- doesFileExist (currentDir ++ "/src/Main.hs")
-    dirExists <- doesDirectoryExist (currentDir ++ "/bin")
-
-    case (fileExists, dirExists) of
-        (False, _) -> Error.missing "`src/Main.hs`"
-        (True, False) -> Error.missing "`bin` directory"
-        otherwise -> do
-
-            let c = "ghc -o bin/"++name++" -no-keep-hi-files -no-keep-o-files -i:src Main"         
-            callCommand c
-            return ()
+build :: String -> String -> IO ()
+build name currentDir = doesFileExist (currentDir ++ "/src/Main.hs") >>= \fileExists ->
+    doesDirectoryExist (currentDir ++ "/bin") >>= \dirExists ->
+        case (fileExists, dirExists) of
+            (False, _) -> Error.missing "`src/Main.hs`"
+            (True, False) -> Error.missing "`bin` directory"
+            otherwise ->
+                callCommand ("ghc -o bin/"++name++" -no-keep-hi-files -no-keep-o-files -i:src Main")  
 
 
 -- SUBCOMMAND RUN
-run :: IO ()
-run = do
-    currentDir <- getCurrentDirectory
-    fileExists <- doesFileExist (currentDir ++ "/src/Main.hs")
-    
-    if not fileExists
-        then Error.missing "`src/Main.hs`"
-        else do
-
-            callCommand "ghc -no-keep-hi-files -no-keep-o-files -i:src Main"
-            let tempFile = currentDir ++ "/src/Main"
-            tempExists <- doesFileExist tempFile
+run :: String -> IO ()
+run currentDir = doesFileExist (currentDir ++ "/src/Main.hs") >>= \fileExists ->
+    if not fileExists then Error.missing "`src/Main.hs`" else
+        let tempFile = currentDir ++ "/src/Main" in
+            callCommand "ghc -no-keep-hi-files -no-keep-o-files -i:src Main" >>
+                callCommand tempFile >> removeFile tempFile    
             
-            if not tempExists
-                then return ()
-                else do
-            
-                    callCommand tempFile
-                    removeFile (tempFile)
-                    return ()
-    
 
 -- SUBCOMMAND NEW
-new :: String -> IO ()
-new name = do
-    dirExists <- doesDirectoryExist name
-    if dirExists
-        then Error.exists name
-        else createNewProject name
-        
-createNewProject :: String -> IO ()
-createNewProject name = do
-    currentDir <- getCurrentDirectory
-    let path = currentDir ++ "/" ++ name
+new :: String -> String -> IO ()
+new name currentDir = doesDirectoryExist name >>= \dirExists ->
+    if dirExists then Error.exists name else do
+        let path = currentDir ++ "/" ++ name
+            main = "module Main where\n\nmain :: IO ()\nmain = do\n    putStrLn \"Hello World\""
 
-    createDirectoryIfMissing True (path ++ "/src")
-    setCurrentDirectory path
-    createDirectory "bin"
-
-    let main = "module Main where\n\nmain :: IO ()\nmain = do\n    putStrLn \"Hello World\""
-    writeFile (path ++ "/src/Main.hs") main 
-    writeFile (path ++ "/.gitignore") "/bin"
-    writeFile (path ++ "/README.md") ("# " ++ name)
-    
-    callCommand "git init -q"
-    return ()
+        createDirectoryIfMissing True (path ++ "/src")
+        setCurrentDirectory path
+        createDirectory "bin"
+        writeFile (path ++ "/src/Main.hs") main 
+        writeFile (path ++ "/.gitignore") "/bin"
+        writeFile (path ++ "/README.md") ("# " ++ name)
+        callCommand "git init -q"
