@@ -5,8 +5,8 @@ Usage:
     smoke [subcommand]
 
 Subcommands:
+    run             Compiles a temp file and runs project 
     new <name>      Creates new Haskell project
-    run             Compiles and runs the current project
-
+    build <name>    Compiles current project
 ```
 

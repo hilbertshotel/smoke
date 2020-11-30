@@ -5,9 +5,9 @@ import System.Directory
 import System.Process
 
 
--- SUBCOMMAND RUN
-run :: IO ()
-run = do
+-- SUBCOMMAND BUILD
+build :: String -> IO ()
+build name = do
     currentDir <- getCurrentDirectory
     fileExists <- doesFileExist (currentDir ++ "/src/Main.hs")
     dirExists <- doesDirectoryExist (currentDir ++ "/bin")
@@ -17,17 +17,33 @@ run = do
         (True, False) -> Error.missing "`bin` directory"
         otherwise -> do
 
-            let name = fromPathExtractName currentDir
-            let bin = "bin/" ++ name
-            let crun = "ghc -o "++bin++" -no-keep-hi-files -no-keep-o-files -i:src Main; "++bin
-         
-            callCommand crun
+            let c = "ghc -o bin/"++name++" -no-keep-hi-files -no-keep-o-files -i:src Main"         
+            callCommand c
             return ()
-    
-fromPathExtractName :: String -> String
-fromPathExtractName currentDir = last path 
-    where path = words [if c == '/' then ' ' else c | c <- currentDir]
 
+
+-- SUBCOMMAND RUN
+run :: IO ()
+run = do
+    currentDir <- getCurrentDirectory
+    fileExists <- doesFileExist (currentDir ++ "/src/Main.hs")
+    
+    if not fileExists
+        then Error.missing "`src/Main.hs`"
+        else do
+
+            callCommand "ghc -no-keep-hi-files -no-keep-o-files -i:src Main"
+            let tempFile = currentDir ++ "/src/Main"
+            tempExists <- doesFileExist tempFile
+            
+            if not tempExists
+                then return ()
+                else do
+            
+                    callCommand tempFile
+                    removeFile (tempFile)
+                    return ()
+    
 
 -- SUBCOMMAND NEW
 new :: String -> IO ()
