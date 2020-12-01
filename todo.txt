@@ -1,0 +1,13 @@
+when compiling to RUN we afterwards delete the binary
+but if we want to run the program again without having added new stuff to it
+it compiles again - it would be better if it just ran
+
+but we delete the binary
+perhaps when we RUN smoke
+the 
+
+getProcess instead of callCommand to avoid error msg
+
+polymorphism
+
+

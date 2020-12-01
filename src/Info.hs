@@ -6,9 +6,13 @@ info = "Smoke is a micro project manager for Haskell\n\
 \    smoke [subcommand]\n\
 \\n\
 \Subcommands:\n\
-\    new <name>      Creates new Haskell project\n\
-\    run             Runs current project\n\
-\    build <name>    Compiles current project\n"
+\   run              Run project\n\
+\   crun             Compile and run project\n\
+\   compile          Compile project \n\
+\   new <name>       Create new project\n"
+
+-- compile string
+-- 
 
 text :: IO ()
 text = putStrLn info
