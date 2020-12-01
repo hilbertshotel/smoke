@@ -1,6 +1,6 @@
 module Main where
 
-import Info
+import String
 import Error
 import Subcmd
 import System.Directory
@@ -9,9 +9,10 @@ import System.Environment
 
 main :: IO ()
 main = getArgs >>= \args ->
+    -- test for GHC installation
     
     case length args of
-        0 -> Info.text
+        0 -> String.info
 
         1 -> case head args of
             "run" -> Subcmd.run

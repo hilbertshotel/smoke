@@ -1,60 +1,74 @@
 module Subcmd where
 
 import Error
+import String
 import System.Directory
 import System.Process
 
 
 -- SUBCOMMAND RUN
 run :: IO ()
-run = doesFileExist "bin/temp" >>= \case
-    False -> return ()
-    True -> 
+run =
+    readFile "Smoke.config" >>= \ccmd ->
+    let path = "bin/" ++ (extractName ccmd False) in
+    doesFileExist path >>= \case
+    False -> Error.missing ("`" ++ path ++ "`")   
+    True -> callCommand path
+
+extractName :: String -> Bool -> String
+extractName (' ':xs) True = ""
+extractName (x:xs) True = x : extractName xs True 
+extractName ('/':xs) _ = extractName xs True
+extractName (x:xs) bool = extractName xs bool
 
 
 -- SUBCOMMAND CRUN
 crun :: IO ()
-crun = checkFileAndFolder >>= \case
-    False -> return ()
-    True -> 
-        callCommand "ghc -o bin/temp -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main" >>
-        doesFileExist "bin/temp" >>= \case
-        True -> callCommand "bin/temp"
-        False -> return ()
+crun = compile >> run
 
 
 -- SUBCOMMAND BUILD
-compile :: IO () -- REMOVE TEMP FILE?
-compile = checkFileAndFolder >>= \case
-    True -> callCommand ("ghc -o bin/"++name++" -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main")  
+compile :: IO ()
+compile = 
+    checkFiles >>= \case
     False -> return ()
+    True -> doesDirectoryExist "bin" >>= \case
+        False -> createDirectory "bin" >> readConfig 
+        True -> readConfig
+
+checkFiles :: IO Bool
+checkFiles = 
+    doesFileExist "src/Main.hs" >>= \mainExists ->
+    doesFileExist "Smoke.config" >>= \configExists ->    
+        case (mainExists, configExists) of
+            (False, _) -> Error.missing "`src/Main.hs`" >> return False
+            (_, False) -> Error.missing "`Smoke.config`" >> return False
+            otherwise -> return True
+
+readConfig :: IO ()
+readConfig =
+    -- check config integrity
+    readFile "Smoke.config" >>= \ccmd ->
+    callCommand ccmd
 
 
 -- SUBCOMMAND NEW
 new :: String -> IO ()
-new name = doesDirectoryExist name >>= \case
+new name = 
+    doesDirectoryExist name >>= \case
     True -> Error.exists name
-    False -> createNewProject name
+    False ->
+           
+        makeAbsolute name >>= \path ->
+        createDirectory name >>
+        setCurrentDirectory path >>
+        createDirectory "src" >>
+            
+        writeFile "src/Main.hs" String.mainFile >>
+        writeFile "README.md" ("# " ++ name) >>
+        writeFile "Smoke.config" (String.config name) >>
 
-createNewProject :: String -> IO () -- DO
-createNewProject name = makeAbsolute name >>= \path ->
-    createDirectory name >> setCurrentDirectory path >>
-    createDirectory "src" >> createDirectory "bin" >>
-    let main = "module Main where\n\nmain :: IO ()\nmain = putStrLn \"Hello World\"" in
-        writeFile ("src/Main.hs") main >>
-        writeFile (".gitignore") "/bin" >>
-        writeFile ("README.md") ("# " ++ name) >>
-        callCommand "git init -q"
-
-        writeFile("Smoke.toml")
-    -- MAKE Smoke.toml file to read name from and create in Main.hs bin/ ++ name and pass to run and crun
-
-
--- UTILS
-checkFileAndFolder :: IO Bool
-checkFileAndFolder = doesFileExist "src/Main.hs" >>= \fileExists ->
-    doesDirectoryExist "bin" >>= \dirExists ->
-        case (fileExists, dirExists) of
-            (False, _) -> Error.missing "`src/Main.hs`" >> return False
-            (_,False) -> Error.missing "`bin` directory" >> return False
-            otherwise -> return True
+        readProcess "git" ["--version"] "" >>= \out ->
+            case length $ words out of
+                3 -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
+                otherwise -> Error.git 

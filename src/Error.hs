@@ -12,8 +12,11 @@ missing path = putStrLn ("error: could not find " ++ path)
 exists :: String -> IO ()
 exists name = putStrLn ("error: `" ++ name ++ "` already exists")
 
-new :: String -> IO ()
-new = putStrLn ("error: new subcommand requires a name")
+new :: IO ()
+new = putStrLn ("error: `new` subcommand requires a <name> argument")
 
 noargs :: String -> IO ()
-noargs cmd = putStrLn ("subcommand " ++ cmd ++ " takes no arguments")
+noargs cmd = putStrLn ("subcommand `" ++ cmd ++ "` takes no arguments")
+
+git :: IO ()
+git = putStrLn "error: couldn't initialize `git`"
