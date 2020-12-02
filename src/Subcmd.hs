@@ -37,7 +37,7 @@ crun =
         True -> readConfig >> run 
 
 
--- SUBCOMMAND BUILD
+-- SUBCOMMAND COMPILE
 compile :: IO ()
 compile = 
     checkFiles >>= \case
@@ -57,7 +57,6 @@ checkFiles =
 
 readConfig :: IO ()
 readConfig =
-    -- check config integrity
     readFile configFile >>= \ccmd ->
     readProcess "ghc" ["--version"] "" >>= \out ->
         case length $ words out of
@@ -84,3 +83,39 @@ new name =
             case length $ words out of
                 3 -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
                 otherwise -> Error.git 
+
+
+-- SUBCOMMAND RESTORE
+restore :: String -> IO ()
+restore name =
+    writeFile configFile (String.config name)
+
+
+-- SUBCOMMAND COUNT
+count :: IO ()
+count =
+    doesDirectoryExist "src" >>= \case
+    False -> Error.missing "src/"
+    True -> extractContents "src" >>= \count ->
+        putStrLn $ "total line count: " ++ (show count)
+
+extractContents :: String -> IO Int
+extractContents path =
+    listDirectory path >>= \contents ->
+        case null contents of
+            True -> return 0
+            False -> handleContents contents path 0
+
+handleContents :: [String] -> String -> Int -> IO Int
+handleContents [] _ result = return result
+handleContents (x:xs) path result =
+    let newPath = path ++ "/" ++ x in
+    doesFileExist newPath >>= \case
+    False ->
+        extractContents newPath >>= \count ->
+        handleContents xs path (result+count)
+    True ->
+        putStrLn newPath >>
+        readFile newPath >>= \contents ->
+        handleContents xs path result >>= \count ->
+        return $ (length $ lines contents) + count

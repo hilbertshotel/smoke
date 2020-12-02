@@ -17,14 +17,20 @@ main = getArgs >>= \args ->
             "run" -> Subcmd.run
             "crun" -> Subcmd.crun
             "compile" -> Subcmd.compile
-            "new" -> Error.new
+            "count" -> Subcmd.count
+            "help" -> String.help
+            "new" -> Error.noname $ head args
+            "restore" -> Error.noname $ head args
             otherwise -> Error.unknown $ head args
             
         2 -> case head args of
+            "new" -> Subcmd.new $ last args
+            "restore" -> Subcmd.restore $ last args 
             "run" -> Error.noargs $ head args
             "crun" -> Error.noargs $ head args
             "compile" -> Error.noargs $ head args
-            "new" -> Subcmd.new $ last args 
+            "count" -> Error.noargs $ head args
+            "help" -> Error.noargs $ head args
             otherwise -> Error.unknown $ head args
 
         otherwise -> Error.many

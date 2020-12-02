@@ -12,8 +12,8 @@ missing path = putStrLn ("error: could not find `" ++ path ++ "`")
 exists :: String -> IO ()
 exists name = putStrLn ("error: `" ++ name ++ "` already exists")
 
-new :: IO ()
-new = putStrLn ("error: subcommand `new` requires a <name> argument")
+noname :: String -> IO ()
+noname cmd = putStrLn ("error: subcommand `" ++ cmd ++ "` requires a <name> argument")
 
 noargs :: String -> IO ()
 noargs cmd = putStrLn ("subcommand `" ++ cmd ++ "` takes no arguments")
