@@ -19,7 +19,7 @@ run =
         let path = head $ tail $ tail $ words ccmd in
         doesFileExist path >>= \case
         False -> Error.missing path   
-        True -> callCommand path
+        True -> callProcess path []
 
 
 -- SUBCOMMAND CRUN
@@ -72,9 +72,13 @@ new name =
             
         writeFile "src/Main.hs" String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
-        case os of
-            "mingw32" -> writeFile configFile (String.config $ name ++ ".exe") >> handleGit
-            otherwise -> writeFile configFile (String.config name) >> handleGit
+        writeConfig name >> handleGit
+
+writeConfig :: String -> IO ()
+writeConfig name =
+    case os of
+        "mingw32" -> writeFile configFile (String.config $ name ++ ".exe")
+        otherwise -> writeFile configFile (String.config name)
 
 handleGit :: IO ()
 handleGit =
@@ -86,8 +90,7 @@ handleGit =
 
 -- SUBCOMMAND RESTORE
 restore :: String -> IO ()
-restore name =
-    writeFile configFile (String.config name)
+restore name = writeConfig name
 
 
 -- SUBCOMMAND COUNT

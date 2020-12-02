@@ -16,5 +16,4 @@ Subcommands:
 Default compile string:
    ghc -o bin/<name> -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main
 
-
 ```
