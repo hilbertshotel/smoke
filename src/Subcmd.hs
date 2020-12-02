@@ -10,8 +10,8 @@ configFile = "ghc.conf"
 
 
 -- SUBCOMMAND RUN
-run :: IO ()
-run =
+run :: [String] -> IO ()
+run args =
     doesFileExist configFile >>= \case
     False -> Error.missing configFile
     True ->
@@ -19,17 +19,17 @@ run =
         let path = head $ tail $ tail $ words ccmd in
         doesFileExist path >>= \case
         False -> Error.missing path   
-        True -> callProcess path []
+        True -> callProcess path args
 
 
 -- SUBCOMMAND CRUN
-crun :: IO ()
-crun = 
+crun :: [String] -> IO ()
+crun args = 
     checkFiles >>= \case
     False -> return ()
     True -> doesDirectoryExist "bin" >>= \case
-        False -> createDirectory "bin" >> readConfig >> run
-        True -> readConfig >> run 
+        False -> createDirectory "bin" >> readConfig >> run args
+        True -> readConfig >> run args
 
 
 -- SUBCOMMAND COMPILE
