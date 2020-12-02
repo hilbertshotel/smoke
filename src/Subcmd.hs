@@ -4,6 +4,7 @@ import Error
 import String
 import System.Directory
 import System.Process
+import System.Info
 
 configFile = "ghc.conf"
 
@@ -15,16 +16,10 @@ run =
     False -> Error.missing configFile
     True ->
         readFile configFile >>= \ccmd ->
-        let path = "bin/" ++ (extractName ccmd False) in
+        let path = head $ tail $ tail $ words ccmd in
         doesFileExist path >>= \case
         False -> Error.missing path   
         True -> callCommand path
-
-extractName :: String -> Bool -> String
-extractName (' ':xs) True = ""
-extractName (x:xs) True = x : extractName xs True 
-extractName ('/':xs) _ = extractName xs True
-extractName (x:xs) bool = extractName xs bool
 
 
 -- SUBCOMMAND CRUN
@@ -77,12 +72,16 @@ new name =
             
         writeFile "src/Main.hs" String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
-        writeFile configFile (String.config name) >>
+        case os of
+            "mingw32" -> writeFile configFile (String.config $ name ++ ".exe") >> handleGit
+            otherwise -> writeFile configFile (String.config name) >> handleGit
 
-        readProcess "git" ["--version"] "" >>= \out ->
-            case length $ words out of
-                3 -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
-                otherwise -> Error.git 
+handleGit :: IO ()
+handleGit =
+    readProcess "git" ["--version"] "" >>= \out ->
+        case length $ words out of
+            3 -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
+            otherwise -> Error.git 
 
 
 -- SUBCOMMAND RESTORE
