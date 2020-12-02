@@ -54,8 +54,8 @@ readConfig :: IO ()
 readConfig =
     readFile configFile >>= \ccmd ->
     readProcess "ghc" ["--version"] "" >>= \out ->
-        case length $ words out of
-            8 -> callCommand ccmd
+        case head $ tail $ words out of
+            "Glorious" -> callCommand ccmd
             otherwise -> Error.ghc
 
 
@@ -83,8 +83,8 @@ writeConfig name =
 handleGit :: IO ()
 handleGit =
     readProcess "git" ["--version"] "" >>= \out ->
-        case length $ words out of
-            3 -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
+        case head $ tail $ words out of
+            "version" -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
             otherwise -> Error.git 
 
 

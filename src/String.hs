@@ -29,4 +29,4 @@ mainFile = "module Main where\n\nmain :: IO ()\nmain = putStrLn \"Hello World\""
 
 help :: IO ()
 help = putStrLn "help will make you lazy. also don't touch the config file unless you know what you're doing.\n\
-\`bin` is set as the compile folder and is absolutely necessary for `Smoke` to run properly.\n"
+\`bin` is set as the compile folder and is absolutely necessary for `Smoke` to run properly."
