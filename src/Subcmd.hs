@@ -5,15 +5,20 @@ import String
 import System.Directory
 import System.Process
 
+configFile = "ghc.conf"
+
 
 -- SUBCOMMAND RUN
 run :: IO ()
 run =
-    readFile "Smoke.config" >>= \ccmd ->
-    let path = "bin/" ++ (extractName ccmd False) in
-    doesFileExist path >>= \case
-    False -> Error.missing ("`" ++ path ++ "`")   
-    True -> callCommand path
+    doesFileExist configFile >>= \case
+    False -> Error.missing configFile
+    True ->
+        readFile configFile >>= \ccmd ->
+        let path = "bin/" ++ (extractName ccmd False) in
+        doesFileExist path >>= \case
+        False -> Error.missing path   
+        True -> callCommand path
 
 extractName :: String -> Bool -> String
 extractName (' ':xs) True = ""
@@ -24,7 +29,12 @@ extractName (x:xs) bool = extractName xs bool
 
 -- SUBCOMMAND CRUN
 crun :: IO ()
-crun = compile >> run
+crun = 
+    checkFiles >>= \case
+    False -> return ()
+    True -> doesDirectoryExist "bin" >>= \case
+        False -> createDirectory "bin" >> readConfig >> run
+        True -> readConfig >> run 
 
 
 -- SUBCOMMAND BUILD
@@ -39,17 +49,20 @@ compile =
 checkFiles :: IO Bool
 checkFiles = 
     doesFileExist "src/Main.hs" >>= \mainExists ->
-    doesFileExist "Smoke.config" >>= \configExists ->    
+    doesFileExist configFile >>= \configExists ->    
         case (mainExists, configExists) of
-            (False, _) -> Error.missing "`src/Main.hs`" >> return False
-            (_, False) -> Error.missing "`Smoke.config`" >> return False
+            (False, _) -> Error.missing "src/Main.hs" >> return False
+            (_, False) -> Error.missing configFile >> return False
             otherwise -> return True
 
 readConfig :: IO ()
 readConfig =
     -- check config integrity
-    readFile "Smoke.config" >>= \ccmd ->
-    callCommand ccmd
+    readFile configFile >>= \ccmd ->
+    readProcess "ghc" ["--version"] "" >>= \out ->
+        case length $ words out of
+            8 -> callCommand ccmd
+            otherwise -> Error.ghc
 
 
 -- SUBCOMMAND NEW
@@ -57,8 +70,7 @@ new :: String -> IO ()
 new name = 
     doesDirectoryExist name >>= \case
     True -> Error.exists name
-    False ->
-           
+    False ->   
         makeAbsolute name >>= \path ->
         createDirectory name >>
         setCurrentDirectory path >>
@@ -66,7 +78,7 @@ new name =
             
         writeFile "src/Main.hs" String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
-        writeFile "Smoke.config" (String.config name) >>
+        writeFile configFile (String.config name) >>
 
         readProcess "git" ["--version"] "" >>= \out ->
             case length $ words out of

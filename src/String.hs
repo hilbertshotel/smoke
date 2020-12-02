@@ -12,7 +12,7 @@ info = putStrLn "Smoke is a micro project manager for Haskell\n\
 \   compile         - Compile project \n\
 \   new <name>      - Create new project\n\
 \\n\
-\Default compile command:\n\
+\Default compile string:\n\
 \   ghc -o bin/<name> -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main\n"
 
 

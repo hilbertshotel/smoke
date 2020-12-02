@@ -9,7 +9,6 @@ import System.Environment
 
 main :: IO ()
 main = getArgs >>= \args ->
-    -- test for GHC installation
     
     case length args of
         0 -> String.info

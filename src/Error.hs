@@ -7,16 +7,19 @@ many :: IO ()
 many = putStrLn "error: too many arguments"
 
 missing :: String -> IO ()
-missing path = putStrLn ("error: could not find " ++ path)
+missing path = putStrLn ("error: could not find `" ++ path ++ "`")
 
 exists :: String -> IO ()
 exists name = putStrLn ("error: `" ++ name ++ "` already exists")
 
 new :: IO ()
-new = putStrLn ("error: `new` subcommand requires a <name> argument")
+new = putStrLn ("error: subcommand `new` requires a <name> argument")
 
 noargs :: String -> IO ()
 noargs cmd = putStrLn ("subcommand `" ++ cmd ++ "` takes no arguments")
 
 git :: IO ()
 git = putStrLn "error: couldn't initialize `git`"
+
+ghc :: IO ()
+ghc = putStrLn "error: `ghc` is not installed on the system"
