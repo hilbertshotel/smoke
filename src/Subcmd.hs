@@ -6,56 +6,56 @@ import System.Directory
 import System.Process
 import System.Info
 
-configFile = "ghc.conf"
+config = "ghc.conf"
+mainhs = "src/Main.hs"
 
 
 -- SUBCOMMAND RUN
 run :: [String] -> IO ()
 run args =
-    doesFileExist configFile >>= \case
-    False -> Error.missing configFile
+    doesFileExist config >>= \case
+    False -> Error.missing config
     True ->
-        readFile configFile >>= \ccmd ->
-        let path = head $ tail $ tail $ words ccmd in
-        doesFileExist path >>= \case
-        False -> Error.missing path   
-        True -> callProcess path args
+        readFile config >>= \ccmd ->
+        let binary = head $ tail $ tail $ words ccmd in
+        doesFileExist binary >>= \case
+        False -> Error.missing binary   
+        True -> callProcess binary args
 
 
 -- SUBCOMMAND CRUN
 crun :: [String] -> IO ()
-crun args = 
+crun args =  
     checkFiles >>= \case
     False -> return ()
     True -> doesDirectoryExist "bin" >>= \case
-        False -> createDirectory "bin" >> readConfig >> run args
-        True -> readConfig >> run args
+        False -> createDirectory "bin" >> startCompile >> run args
+        True -> startCompile >> run args
 
 
 -- SUBCOMMAND COMPILE
-compile :: IO ()
-compile = 
+release :: IO ()
+release = 
     checkFiles >>= \case
     False -> return ()
     True -> doesDirectoryExist "bin" >>= \case
-        False -> createDirectory "bin" >> readConfig 
-        True -> readConfig
+        False -> createDirectory "bin" >> startCompile 
+        True -> startCompile
 
 checkFiles :: IO Bool
 checkFiles = 
-    doesFileExist "src/Main.hs" >>= \mainExists ->
-    doesFileExist configFile >>= \configExists ->    
-        case (mainExists, configExists) of
-            (False, _) -> Error.missing "src/Main.hs" >> return False
-            (_, False) -> Error.missing configFile >> return False
+    doesFileExist mainhs >>= \mainhsExists ->
+    doesFileExist config >>= \configExists ->    
+        case (mainhsExists, configExists) of
+            (False, _) -> Error.missing mainhs >> return False
+            (_, False) -> Error.missing config >> return False
             otherwise -> return True
 
-readConfig :: IO ()
-readConfig =
-    readFile configFile >>= \ccmd ->
+startCompile :: IO ()
+startCompile =
     readProcess "ghc" ["--version"] "" >>= \out ->
         case head $ tail $ words out of
-            "Glorious" -> callCommand ccmd
+            "Glorious" -> readFile config >>= \ccmd -> callProcess "ghc" ("-O2":(words ccmd))
             otherwise -> Error.ghc
 
 
@@ -70,21 +70,21 @@ new name =
         setCurrentDirectory path >>
         createDirectory "src" >>
             
-        writeFile "src/Main.hs" String.mainFile >>
+        writeFile mainhs String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
-        writeConfig name >> handleGit
+        writeConfig name >> gitInit
 
 writeConfig :: String -> IO ()
 writeConfig name =
     case os of
-        "mingw32" -> writeFile configFile (String.config $ name ++ ".exe")
-        otherwise -> writeFile configFile (String.config name)
+        "mingw32" -> writeFile config (String.configFile $ name ++ ".exe")
+        otherwise -> writeFile config (String.configFile name)
 
-handleGit :: IO ()
-handleGit =
+gitInit :: IO ()
+gitInit =
     readProcess "git" ["--version"] "" >>= \out ->
         case head $ tail $ words out of
-            "version" -> callCommand "git init -q" >> writeFile ".gitignore" "/bin"
+            "version" -> callProcess "git" ["init", "-q"] >> writeFile ".gitignore" "/bin"
             otherwise -> Error.git 
 
 
@@ -94,30 +94,37 @@ restore name = writeConfig name
 
 
 -- SUBCOMMAND COUNT
-count :: IO ()
-count =
-    doesDirectoryExist "src" >>= \case
-    False -> Error.missing "src/"
-    True -> extractContents "src" >>= \count ->
-        putStrLn $ "total line count: " ++ (show count)
+count :: String -> IO ()
+count sourceFolder =
+    doesDirectoryExist sourceFolder >>= \case
+    False -> Error.missing sourceFolder
+    True -> extractContents sourceFolder >>= \result ->
+        putStrLn $ "total line count: " ++ (show result)
 
 extractContents :: String -> IO Int
-extractContents path =
-    listDirectory path >>= \contents ->
+extractContents folder =
+    listDirectory folder >>= \contents ->
         case null contents of
             True -> return 0
-            False -> handleContents contents path 0
+            False -> handleContents contents folder 0
 
 handleContents :: [String] -> String -> Int -> IO Int
 handleContents [] _ result = return result
 handleContents (x:xs) path result =
-    let newPath = path ++ "/" ++ x in
+    let newPath = path ++ x in
     doesFileExist newPath >>= \case
     False ->
-        extractContents newPath >>= \count ->
-        handleContents xs path (result+count)
+        extractContents newPath >>= \lineCount ->
+        handleContents xs path (result+lineCount)
     True ->
         putStrLn newPath >>
         readFile newPath >>= \contents ->
-        handleContents xs path result >>= \count ->
-        return $ (length $ lines contents) + count
+        handleContents xs path result >>= \lineCount ->
+        return $ (length $ lines contents) + lineCount
+
+
+-- SUBCOMMAND PATH
+fetchExecPath :: IO ()
+fetchExecPath = findExecutable "smoke" >>= \case
+    Just executable -> putStrLn executable
+    Nothing -> Error.execPath

@@ -7,20 +7,29 @@ info = putStrLn "Smoke is a micro project manager for Haskell\n\
 \   smoke [subcommand]\n\
 \\n\
 \Subcommands:\n\
-\   run             - Run project\n\
-\   compile         - Compile project \n\
-\   crun            - Compile and run project\n\
 \   new <name>      - Create new project\n\
-\   restore <name>  - Restore default GHC config\n\
-\   count           - Total line count for src/\n\
-\   help            - Project structure details\n\
+\   run             - Run project (if compiled)\n\
+\   crun            - Compile and run project\n\
+\   release         - Compile project with -O2 optimization \n\
+\   restore <name>  - Restore default GHC config string\n\
+\   count           - Total line count for src/ folder\n\
+\   path            - Find path of executable\n\
+\   help            - Helpful and honest opinion\n\
 \\n\
-\Default compile string:\n\
-\   ghc -o bin/<name> -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main\n"
+\Default GHC config string:\n\
+\   src/Main.hs -o bin/<name> -i:src -no-keep-hi-files -no-keep-o-files -XLambdaCase\n\
+\\n\
+\Compilation info:\n\
+\   - src/Main.hs is the entry point\n\
+\   - -o bin/ is the compilation folder\n\
+\   - both are hardcoded and necessary for Smoke to function properly\n\
+\   - change <name> manually if you want to rename the binary output\n\
+\   - edit -i:src if you want the compiler to include other source folders (-i:src:pkg)\n\
+\   - edit ghc.conf file to add other necessary compile options\n"
 
 
-config :: String -> String
-config name = "ghc -o bin/" ++ name ++ " -no-keep-hi-files -no-keep-o-files -XLambdaCase -i:src Main"
+configFile :: String -> String
+configFile name = "src/Main.hs -o bin/" ++ name ++ " -i:src -no-keep-hi-files -no-keep-o-files -XLambdaCase"
 
 
 mainFile :: String
@@ -28,5 +37,4 @@ mainFile = "module Main where\n\nmain :: IO ()\nmain = putStrLn \"Hello World\""
 
 
 help :: IO ()
-help = putStrLn "help will make you lazy. also don't touch the config file unless you know what you're doing.\n\
-\`bin` is set as the compile folder and is absolutely necessary for `Smoke` to run properly."
+help = putStrLn "cremation grounds"

@@ -19,7 +19,10 @@ noargs :: String -> IO ()
 noargs cmd = putStrLn ("subcommand `" ++ cmd ++ "` takes no arguments")
 
 git :: IO ()
-git = putStrLn "error: couldn't initialize `git`"
+git = putStrLn "error: failed to initialize `git`"
 
 ghc :: IO ()
 ghc = putStrLn "error: `ghc` is not installed on the system"
+
+execPath :: IO ()
+execPath = putStrLn "error: can't fnd path"

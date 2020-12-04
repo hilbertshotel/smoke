@@ -3,7 +3,6 @@ module Main where
 import String
 import Error
 import Subcmd
-import System.Directory
 import System.Environment
 
 
@@ -17,12 +16,13 @@ main = getArgs >>= \args ->
             -- subcommands
             "run" -> Subcmd.run []
             "crun" -> Subcmd.crun []
-            "compile" -> Subcmd.compile
-            "count" -> Subcmd.count
+            "release" -> Subcmd.release
+            "count" -> Subcmd.count "src/"
+            "path" -> Subcmd.fetchExecPath
             "help" -> String.help
             -- errors
-            "new" -> Error.noname $ head args
-            "restore" -> Error.noname $ head args
+            "new" -> Error.noname "new"
+            "restore" -> Error.noname "restore"
             otherwise -> Error.unknown $ head args
             
         2 -> case head args of
@@ -32,12 +32,15 @@ main = getArgs >>= \args ->
             "run" -> Subcmd.run $ tail args
             "crun" -> Subcmd.crun $ tail args
             -- errors
-            "compile" -> Error.noargs $ head args
-            "count" -> Error.noargs $ head args
-            "help" -> Error.noargs $ head args
+            "release" -> Error.noargs "release"
+            "count" -> Error.noargs "count"
+            "path" -> Error.noargs "path"
+            "help" -> Error.noargs "help"
             otherwise -> Error.unknown $ head args
 
         otherwise -> case head args of
+            -- subcommands
             "run" -> Subcmd.run $ tail args
             "crun" -> Subcmd.crun $ tail args
+            -- errors
             otherwise -> Error.many
