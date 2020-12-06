@@ -1,28 +1,30 @@
 module Error where
 
+err = "\x1b[31merror:\x1b[0m"
+
 unknown :: String -> IO ()
-unknown sub = putStrLn ("error: unknown subcommand `" ++ sub ++ "`")
+unknown sub = putStrLn $ err ++ " unknown subcommand `" ++ sub ++ "`"
 
 many :: IO ()
-many = putStrLn "error: too many arguments"
+many = putStrLn $ err ++" too many arguments"
 
 missing :: String -> IO ()
-missing path = putStrLn ("error: could not find `" ++ path ++ "`")
+missing path = putStrLn $ err ++ " could not find `" ++ path ++ "`"
 
 exists :: String -> IO ()
-exists name = putStrLn ("error: `" ++ name ++ "` already exists")
+exists name = putStrLn $ err ++ " `" ++ name ++ "` already exists"
 
 noname :: String -> IO ()
-noname cmd = putStrLn ("error: subcommand `" ++ cmd ++ "` requires a <name> argument")
+noname cmd = putStrLn $ err ++ " subcommand `" ++ cmd ++ "` requires a <name> argument"
 
 noargs :: String -> IO ()
-noargs cmd = putStrLn ("subcommand `" ++ cmd ++ "` takes no arguments")
+noargs cmd = putStrLn $ err ++ " `" ++ cmd ++ "` takes no arguments"
 
 git :: IO ()
-git = putStrLn "error: failed to initialize `git`"
+git = putStrLn $ err ++ " failed to initialize `git`"
 
 ghc :: IO ()
-ghc = putStrLn "error: `ghc` is not installed on the system"
+ghc = putStrLn $ err ++ " `ghc` is not installed on the system"
 
 execPath :: IO ()
-execPath = putStrLn "error: can't fnd path"
+execPath = putStrLn $ err ++ " can't fnd path"

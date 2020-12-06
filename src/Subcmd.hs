@@ -72,7 +72,8 @@ new name =
             
         writeFile mainhs String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
-        writeConfig name >> gitInit
+        writeConfig name >> gitInit >>
+        String.newProject name
 
 writeConfig :: String -> IO ()
 writeConfig name =

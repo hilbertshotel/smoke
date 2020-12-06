@@ -27,14 +27,14 @@ info = putStrLn "Smoke is a micro project manager for Haskell\n\
 \   - edit -i:src if you want the compiler to include other source folders (-i:src:pkg)\n\
 \   - edit ghc.conf file to add other necessary compile options\n"
 
-
 configFile :: String -> String
 configFile name = "src/Main.hs -o bin/" ++ name ++ " -i:src -no-keep-hi-files -no-keep-o-files -XLambdaCase"
-
 
 mainFile :: String
 mainFile = "module Main where\n\nmain :: IO ()\nmain = putStrLn \"Hello World\""
 
-
 help :: IO ()
 help = putStrLn "cremation grounds"
+
+newProject :: String -> IO ()
+newProject name = putStrLn $ "      Project \x1b[32m" ++ name ++ "\x1b[0m initialized"
