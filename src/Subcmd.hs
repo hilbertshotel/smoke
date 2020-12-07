@@ -69,7 +69,8 @@ new name =
         createDirectory name >>
         setCurrentDirectory path >>
         createDirectory "src" >>
-            
+        
+        writeFile "todo" "" >>    
         writeFile mainhs String.mainFile >>
         writeFile "README.md" ("# " ++ name) >>
         writeConfig name >> gitInit >>
@@ -85,7 +86,9 @@ gitInit :: IO ()
 gitInit =
     readProcess "git" ["--version"] "" >>= \out ->
         case head $ tail $ words out of
-            "version" -> callProcess "git" ["init", "-q"] >> writeFile ".gitignore" "/bin"
+            "version" ->
+                callProcess "git" ["init", "-q"] >>
+                writeFile ".gitignore" "/bin\ntodo"
             otherwise -> Error.git 
 
 
