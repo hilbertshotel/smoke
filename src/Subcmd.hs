@@ -29,8 +29,8 @@ crun args =
     checkFiles >>= \case
     False -> return ()
     True -> doesDirectoryExist "bin" >>= \case
-        False -> createDirectory "bin" >> startCompile >> run args
-        True -> startCompile >> run args
+        False -> createDirectory "bin" >> startCompile "-O0" >> run args
+        True -> startCompile "-O0" >> run args
 
 
 -- SUBCOMMAND COMPILE
@@ -39,8 +39,8 @@ release =
     checkFiles >>= \case
     False -> return ()
     True -> doesDirectoryExist "bin" >>= \case
-        False -> createDirectory "bin" >> startCompile 
-        True -> startCompile
+        False -> createDirectory "bin" >> startCompile "-O2"
+        True -> startCompile "-O2"
 
 checkFiles :: IO Bool
 checkFiles = 
@@ -51,11 +51,11 @@ checkFiles =
             (_, False) -> Error.missing config >> return False
             otherwise -> return True
 
-startCompile :: IO ()
-startCompile =
+startCompile :: String -> IO ()
+startCompile o =
     readProcess "ghc" ["--version"] "" >>= \out ->
         case head $ tail $ words out of
-            "Glorious" -> readFile config >>= \ccmd -> callProcess "ghc" ("-O2":(words ccmd))
+            "Glorious" -> readFile config >>= \ccmd -> callProcess "ghc" (o:(words ccmd))
             otherwise -> Error.ghc
 
 
