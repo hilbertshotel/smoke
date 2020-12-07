@@ -1,6 +1,6 @@
 module Error where
 
-err = "\x1b[31merror:\x1b[0m"
+err = "\x1B[1m\x1B[31merror:\x1B[0m"
 
 unknown :: String -> IO ()
 unknown sub = putStrLn $ err ++ " unknown subcommand `" ++ sub ++ "`"

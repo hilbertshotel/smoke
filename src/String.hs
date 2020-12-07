@@ -37,4 +37,4 @@ help :: IO ()
 help = putStrLn "cremation grounds"
 
 newProject :: String -> IO ()
-newProject name = putStrLn $ "      Project \x1b[32m" ++ name ++ "\x1b[0m initialized"
+newProject name = putStrLn $ "      Project \x1B[1m\x1B[32m" ++ name ++ "\x1B[0m initialized"
